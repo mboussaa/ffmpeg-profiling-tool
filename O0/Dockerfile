@@ -1,9 +1,8 @@
 
 FROM ubuntu:14.04
 
-MAINTAINER Nelson Darkwah Oppong "ndo@felixnelson.de"
+MAINTAINER Mohamed Boussaa "mohamed.boussaa@inria.fr"
 
-# from: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu
 
 RUN apt-get update && \
     apt-get -y install wget git-core autoconf automake build-essential libass-dev libgpac-dev \
