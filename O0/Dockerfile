@@ -1,110 +1,164 @@
+# docker-ffmpeg-centos
+# ffmpeg with lots of codecs on centos base
 
-FROM ubuntu:14.04
-
+FROM centos
 MAINTAINER Mohamed Boussaa "mohamed.boussaa@inria.fr"
 
 
-RUN apt-get update && \
-    apt-get -y install wget git-core autoconf automake build-essential libass-dev libgpac-dev \
-      libsdl1.2-dev libtheora-dev libtool libva-dev libvdpau-dev libvorbis-dev libx11-dev \
-      libxext-dev libxfixes-dev pkg-config texi2html zlib1g-dev unzip libass-dev libmp3lame-dev librtmp-dev
+RUN yum install -y \
+  autoconf \
+  automake \
+  gcc \
+  gcc-c++ \
+  git \
+  libtool \
+  make \
+  nasm \
+  pkgconfig \
+  zlib-devel
 
-RUN mkdir ~/ffmpeg_sources
 
-# yasm
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet "http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz" && \
-    tar xzvf yasm-1.2.0.tar.gz && \
-    cd yasm-1.2.0 && \
+RUN mkdir /root/ffmpeg_sources
+WORKDIR /root/ffmpeg_sources
+
+
+# Yasm
+# Yasm is an assembler used by x264 and FFmpeg.
+
+RUN git clone --depth 1 git://github.com/yasm/yasm.git
+
+RUN cd yasm && \
+  autoreconf -fiv && \
   sed -i 's/-O2/-O1/g' configure && \
   sed -i 's/-O1/-O1/g' configure && \
   sed -i 's/-O3/-O1/g' configure && \
-    ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
-    make && \
-    make install && \
-    make distclean
+  ./configure && \
+  make && \
+  make install
+
 
 # libx264
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet "http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2" && \
-    tar xjvf last_x264.tar.bz2 && \
-    cd x264-snapshot* && \
-    PATH="$PATH:$HOME/bin" && \
-  sed -i 's/-O2/-O1/g' configure && \
-  sed -i 's/-O1/-O1/g' configure && \
-  sed -i 's/-O3/-O1/g' configure && \
-./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --disable-opencl && \
-    PATH="$PATH:$HOME/bin" make && \
-    make install && \
-    make distclean
+# H.264 video encoder.
 
-# libfdk-aac
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet -O fdk-aac.zip "https://github.com/mstorsjo/fdk-aac/zipball/master"  && \
-    unzip fdk-aac.zip && \
-    cd mstorsjo-fdk-aac* && \
-    autoreconf -fiv && \
+RUN git clone --depth 1 git://git.videolan.org/x264
+RUN cd x264 && \
   sed -i 's/-O2/-O1/g' configure && \
   sed -i 's/-O1/-O1/g' configure && \
   sed -i 's/-O3/-O1/g' configure && \
-    ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
-    make && \
-    make install && \
-    make distclean
+  ./configure --enable-static && \
+  make && \
+  make install
+
+
+# libfdk_aac
+# AAC audio encoder.
+
+RUN git clone --depth 1 git://git.code.sf.net/p/opencore-amr/fdk-aac
+RUN cd fdk-aac && \
+  autoreconf -fiv && \
+  sed -i 's/-O2/-O1/g' configure && \
+  sed -i 's/-O1/-O1/g' configure && \
+  sed -i 's/-O3/-O1/g' configure && \
+  ./configure --disable-shared && \
+  make && \
+  make install
+
+
+# libmp3lame
+# MP3 audio encoder.
+
+RUN curl -L -O http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+RUN tar xzvf lame-3.99.5.tar.gz
+RUN cd lame-3.99.5 && \
+  sed -i 's/-O2/-O1/g' configure && \
+  sed -i 's/-O1/-O1/g' configure && \
+  sed -i 's/-O3/-O1/g' configure && \
+  ./configure --disable-shared --enable-nasm && \
+  make && \
+  make install
+
 
 # libopus
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet "http://downloads.xiph.org/releases/opus/opus-1.1.tar.gz" && \
-    tar xzvf opus-1.1.tar.gz && \
-    cd opus-1.1 && \
+# Opus audio decoder and encoder.
+
+RUN git clone git://git.opus-codec.org/opus.git
+RUN cd opus && \
+  autoreconf -fiv && \
   sed -i 's/-O2/-O1/g' configure && \
   sed -i 's/-O1/-O1/g' configure && \
   sed -i 's/-O3/-O1/g' configure && \
-    ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
-    make && \
-    make install && \
-    make distclean
+  ./configure --disable-shared && \
+  make && \
+  make install
+
+
+# libogg
+# Ogg bitstream library. Required by libtheora and libvorbis.
+
+RUN curl -O http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
+RUN tar xzvf libogg-1.3.2.tar.gz
+RUN cd libogg-1.3.2 && \
+  sed -i 's/-O2/-O1/g' configure && \
+  sed -i 's/-O1/-O1/g' configure && \
+  sed -i 's/-O3/-O1/g' configure && \
+  ./configure --disable-shared && \
+  make && \
+  make install
+
+
+# libvorbis
+# Vorbis audio encoder. Requires libogg.
+
+RUN curl -O http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.gz
+RUN tar xzvf libvorbis-1.3.4.tar.gz
+RUN cd libvorbis-1.3.4 && \
+  sed -i 's/-O2/-O1/g' configure && \
+  sed -i 's/-O1/-O1/g' configure && \
+  sed -i 's/-O3/-O1/g' configure && \
+  ./configure --with-ogg --disable-shared && \
+  make && \
+  make install
+
 
 # libvpx
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet "http://webm.googlecode.com/files/libvpx-v1.3.0.tar.bz2" && \
-    tar xjvf libvpx-v1.3.0.tar.bz2 && \
-    cd libvpx-v1.3.0 && \
-  sed -i 's/-O2/-O1/g' configure && \
-  sed -i 's/-O1/-O1/g' configure && \
-  sed -i 's/-O3/-O1/g' configure && \
-    ./configure --prefix="$HOME/ffmpeg_build" --disable-examples && \
-    make && \
-    make install && \
-    make clean
+# VP8/VP9 video encoder.
 
-# ffmpeg
-RUN cd ~/ffmpeg_sources && \
-    wget --quiet "http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2" && \
-    tar xjvf ffmpeg-snapshot.tar.bz2 && \
-    cd ffmpeg && \
-    PATH="$PATH:$HOME/bin" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
+RUN cd libvpx && \
   sed -i 's/-O2/-O1/g' configure && \
   sed -i 's/-O1/-O1/g' configure && \
   sed -i 's/-O3/-O1/g' configure && \
-./configure \
-      --prefix="$HOME/ffmpeg_build" \
-      --extra-cflags="-I$HOME/ffmpeg_build/include" \
-      --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
-      --bindir="$HOME/bin" \
-      --enable-gpl \
-      --enable-libass \
-      --enable-libfdk-aac \
-      --enable-libfreetype \
-      --enable-libmp3lame \
-      --enable-libopus \
-      --enable-libtheora \
-      --enable-libvorbis \
-      --enable-libvpx \
-      --enable-libx264 \
-      --enable-librtmp \
-      --enable-nonfree && \
-    PATH="$PATH:$HOME/bin" make && \
-    make install && \
-    make distclean && \
-    hash -r
+  ./configure --disable-examples && \
+  make && \
+  make install
+
+
+# ffmpeg (finally!!!)
+
+RUN git clone --depth 1 git://source.ffmpeg.org/ffmpeg
+ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
+RUN cd ffmpeg &&\
+  sed -i 's/-O2/-O1/g' configure && \
+  sed -i 's/-O1/-O1/g' configure && \
+  sed -i 's/-O3/-O1/g' configure && \
+  ./configure --enable-gpl --enable-nonfree --enable-libfdk_aac --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 &&\
+  make &&\
+  make install &&\
+  hash -r
+
+
+# cleanup 
+WORKDIR /root
+RUN rm -rf /root/ffmpeg_sources
+
+RUN yum erase -y \
+  autoconf \
+  automake \
+  gcc \
+  gcc-c++ \
+  git \
+  libtool \
+  nasm \
+  zlib-devel
+
+RUN yum clean all
