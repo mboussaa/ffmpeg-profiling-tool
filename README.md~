@@ -1,6 +1,6 @@
 # Performance profiling tool
 ## Goal
-In this project, we are going to use cAdvisor to monitor Docker containers. Furthermore, we will push the data into InfluxDB and finally display it through Grafana.
+In this project, we are going to use cAdvisor to monitor Docker containers. Furthermore, we will push data into InfluxDB and finally display it through Grafana.
 
 - cAdvisor: Google Monitoring Container: provides container users an understanding of the resource usage and performance characteristics of their running containers.
    
@@ -10,12 +10,12 @@ In this project, we are going to use cAdvisor to monitor Docker containers. Furt
    
 In order to monitor docker containers, we are going to wrap different compiled versions of ffmpeg library within docker containers and then, stress that library to increase the load in term of memory and cpu usage.
 
-This stress tool generates command lines that target FFMpeg Library. It uses the novelty search to generate efficiently test data passed as parameters to the command lines.
+This stress tool generates command lines that target FFMpeg Library. It uses the novelty search algorithm to generate efficiently test data passed as parameters to command lines.
 
-More details can be find [here]
+More details can be found [here]
 [here]:https://github.com/mboussaa/script-generator-for-ffmpeg
 
-We are going to compile ffmpeg library with at least, two different optimization options (e.g. -O1, 02...) each one will be wrapped in a docker container. Then, we will monitor both versions in term of non functional properties.
+We are going to compile ffmpeg library with at least, two different optimization options (e.g. -O1, 02...) Each version will be wrapped into a docker container. Then, we will monitor both versions in term of non functional properties.
 
 ##Installation :
 ###InfluxDB Installation :
@@ -100,7 +100,7 @@ Now, we have to create a stress container for ffmpeg in order to
 
 (3) show statistical analyzes through Grafana.
 
-To do so, we are going to create two other containers (you can create more) from ffmpeg with two different compilation optimizations. Then, we are going to execute a huge number of ffmpeg command lines on that containers in order to increase the load.
+To do so, we are going to create two other containers (you can create more) from ffmpeg with two different compilation optimizations. Then, we are going to execute a huge number of ffmpeg command lines on these containers in order to increase the load.
 
 Go through O0 and O1 repositories and type the following commands in order to create docker images from docker files:
 
@@ -127,7 +127,7 @@ Before running the following commands, copy the content of tmp folder into your 
 	/bin/bash 
 	-c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
-NB 1: You can create more than two images using other docker files within O2, 03, Ofast repositories.
+NB 1: You can create more than two images using other docker files within O2, O3, Ofast folders.
 
 NB 2: Each container should be run in a different terminal
 
@@ -164,7 +164,7 @@ This will be the percentage used over that 2s interval.
 You can find more details about measuring CPU usage in cadvisor github: [issue #679]
 [issue #679]:https://github.com/google/cadvisor/issues/679
 
-However, the memory consumption is an instantaneous metric. It's value will be useful without a derivative but a mean value within an interval of 2 sec would be significant. You can use the following example to design the memory consumption:
+However, the memory consumption is an instantaneous metric. It's value will be useful without a derivative but a mean value within an interval of 2 sec would be significant. You can use the following example to calculate the memory consumption:
 
 	select container_name, mean(memory_usage) 
 	from stats 
