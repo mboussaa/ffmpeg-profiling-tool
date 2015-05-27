@@ -119,20 +119,32 @@ NB: You can create more than two images using other docker files within O2, 03, 
 
 ###Monitoring and test :
 
-Finally, once containers are running, we can monitor and measure some non-functional metrics.
+Finally, once containers start running, we can monitor and measure some non-functional metrics.
+
 First, we have to be sure that cAdvisor is dumping data to the influx data base. Go to :
 
     http://10.0.2.15:8083
 
 and execute a sample query to explore data. For example: 
 
-    select container_name, derivate(cpu_cumulative_usage) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
+	select container_name, derivate(cpu_cumulative_usage) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
 
-In fact, this query expresses CPU% utilized per container "containero0" for the last 15 minutes. Results are grouped by time(2s)
+In fact, this query expresses CPU utilized per container "containero0" within last 15 minutes. Results are grouped by time(2s).
 
-You can find more details about measuring CPU usage in cadvisor github:[issue #679]
-[issue 679]:https://github.com/google/cadvisor/issues/679 
+CPU usage is a cumulative metric so it is an ever-increasing integer. The mean of it won't be very interesting. We utilized a derivative allows us to show the difference between data points and thus see how much CPU was used in that time period.
 
+cAdvisor also outputs in number of cores. The result will be in billionths of a core so if we divide by 1,000,000,000, we get the result in whole cores. To get the percentage of CPU Usage, we will divide over the number of cores on the machine (your machine). For example: 
+
+	select container_name, ((derivate(cpu_cumulative_usage)/1000000000)/4) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
+
+This will be the percentage used over that 2s interval.
+
+You can find more details about measuring CPU usage in cadvisor github: [issue #679]
+[issue 679]:https://github.com/google/cadvisor/issues/679
+
+However, the memory consumption is an instantaneous metric. It's value will be useful without a derivative but a mean value within an intervall of 2 sec would be significant. You can use the following example to design the memory consumption: 
+
+	select container_name, mean(memory_usage) from stats where container_name="containero0" and time>now()-15m group by time(2s)
 
 Some stats and data must be displayed on the screen.
 
