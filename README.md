@@ -113,9 +113,19 @@ Now we have to start the two containers from both images (versiono0 et versiono1
 
 Before running the following commands, copy the content of tmp folder into your root tmp folder. This folder contains the media files and the script to run.
 
-    docker run -i --name=containero0 -v /tmp:/tmp -t versiono0 /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+	docker run -i 
+	--name=containero0 
+	-v /tmp:/tmp 
+	-t versiono0 
+	/bin/bash 
+	-c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
-    docker run -i --name=containero1 -v /tmp:/tmp -t versiono1 /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+	docker run -i 
+	--name=containero1 
+	-v /tmp:/tmp 
+	-t versiono1 
+	/bin/bash 
+	-c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 NB 1: You can create more than two images using other docker files within O2, 03, Ofast repositories.
 
@@ -123,8 +133,8 @@ NB 2: Each container should be run in a different terminal
 
     docker ps # to see the running containers, they should be 5
 
-###Monitoring and test :
-
+###Monitoring and profiling :
+####From InfluxDB :
 Finally, once containers start running, we can monitor and measure some non-functional metrics.
 
 First, we have to be sure that cAdvisor is dumping data to the influx data base. Go to :
@@ -133,7 +143,10 @@ First, we have to be sure that cAdvisor is dumping data to the influx data base.
 
 and execute a sample query to explore data. For example:
 
-    select container_name, derivate(cpu_cumulative_usage) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
+	select container_name, derivate(cpu_cumulative_usage) 
+	from stats 
+	where docker_name="containero0" and time>now()-15m 
+	group by time(2s)
 
 In fact, this query expresses the CPU utilized per container "containero0" within last 15 minutes. Results are grouped by time(2s).
 
@@ -141,7 +154,10 @@ CPU usage is a cumulative metric so it is an ever-increasing integer. The mean o
 
 cAdvisor also outputs in number of cores. The result will be in billionths of a core so if we divide by 1,000,000,000, we get the result in whole cores. To get the percentage of CPU Usage, we will divide over the number of cores on the machine (your machine). For example:
 
-    select container_name, ((derivate(cpu_cumulative_usage)/1000000000)/4) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
+	select container_name, ((derivate(cpu_cumulative_usage)/1000000000)/4) 
+	from stats 
+	where docker_name="containero0" and time>now()-15m 
+	group by time(2s)
 
 This will be the percentage used over that 2s interval.
 
@@ -150,10 +166,13 @@ You can find more details about measuring CPU usage in cadvisor github: [issue #
 
 However, the memory consumption is an instantaneous metric. It's value will be useful without a derivative but a mean value within an interval of 2 sec would be significant. You can use the following example to design the memory consumption:
 
-    select container_name, mean(memory_usage) from stats where container_name="containero0" and time>now()-15m group by time(2s)
+	select container_name, mean(memory_usage) 
+	from stats 
+	where container_name="containero0" and time>now()-15m 
+	group by time(2s)
 
 Some stats and data must be displayed on the screen.
-
+####From Grafana :
 To test Grafana and set some metrics, go to :
  
     http://10.0.2.15:80
