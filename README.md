@@ -21,71 +21,105 @@ We are going to compile ffmpeg library with at least, two different optimization
 ###InfluxDB Installation :
 Start InfluxDB inside a new container.
 
-    docker run -d -p 8083:8083 -p 8086:8086 --expose 8090 --expose 8099 tutum/influxdb
+	docker run   
+	-d 
+	--name=influxdb  
+	-p 8083:8083   
+	-p 8086:8086   
+	--expose 8090   
+	--expose 8099   
+	tutum/influxdb
 
-Navigate now to InfluxDB administration page at
+For our case, the HOST_IP is 10.0.2.15. We will continue to use this IP in the rest of this tutorial but you should replace it with your local HOST_IP (use ifconfig to catch your IP)
 
-    http://10.0.2.15:8083. 
+So then, navigate now to InfluxDB administration page at:
 
-Login with root/root and create a new database called cadvisorDB.
+	http://10.0.2.15:8083 
+
+Login with root/root and create a new database called "cadvisorDB".
 
 ###cAdvisor Installation :
-Now start cAdvisor with the extra parameters storage_driver and storage_driver_host.
+Now start cAdvisor with the extra parameters storage_driver, storage_driver_host and storage_driver_db.
 
-    docker run      
-    --volume=/:/rootfs:ro      
-    --volume=/var/run:/var/run:rw      
-    --volume=/sys:/sys:ro      
-    --volume=/var/lib/docker/:/var/lib/docker:ro      
-    --publish=8080:8080      
-    --detach=true      
-    --name=cadvisorDB1      
-    google/cadvisor:latest   
-    --logtostderr    
-    -storage_driver=influxdb     
-    -storage_driver_host=10.0.2.15:8086 
-    -storage_driver_db= 
+	docker run      
+	--volume=/:/rootfs:ro      
+	--volume=/var/run:/var/run:rw      
+	--volume=/sys:/sys:ro      
+	--volume=/var/lib/docker/:/var/lib/docker:ro      
+	--publish=8080:8080      
+	--detach=true      
+	--name=cadvisor      
+	google/cadvisor:latest   
+	--logtostderr    
+	-storage_driver=influxdb     
+	-storage_driver_host=10.0.2.15:8086 
+	-storage_driver_db=cadvisorDB  
     
 You should specify your ip host for the storage_driver_host. As well, you have to put the name of the data base you have created "cadvisorDB".
 
 If you wan to access to cAdvisor Web UI, please navigate to : 
 
-    http://10.0.2.15:8080 (Assuming that 10.0.2.15 is your host ip)
+	http://10.0.2.15:8080 (Assuming that 10.0.2.15 is your host ip)
 
 ###Grafana Installation :
 Start another container running Grafana.
 
-    docker run -d -p 80:80 -e HTTP_USER=root -e HTTP_PASS=root -e INFLUXDB_HOST=10.0.2.15 -e INFLUXDB_PORT=8086 -e INFLUXDB_NAME=cadvisorDB -e INFLUXDB_USER=root -e INFLUXDB_PASS=root tutum/grafana
+	docker run 
+	-d 
+	-p 80:80  
+	--name=grafana   
+	-e HTTP_USER=root    
+	-e HTTP_PASS=root     
+	-e INFLUXDB_HOST=<HOST_IP>     
+	-e INFLUXDB_PORT=8086  
+	-e INFLUXDB_NAME=cadvisorDB 
+	-e INFLUXDB_USER=root 
+	-e INFLUXDB_PASS=root      
+	tutum/grafana
     
 You can access to Grafana Web UI through : 
     
-    http://10.0.2.15:80
+	http://10.0.2.15:80
 
 So far, we have created 3 containers :
   - cAdvisor container
   - InfluxDB container
   - Grafana Container
 
+Execute "docker ps" to see running containers.
+
 ###Generating stress containers : 
  
-Now, we have to create a stress container for ffmpeg in order to (1) gather data from cAdvisor, (2) save them in InfluxDB and (3) show statistical analyzes through Grafana.
+Now, we have to create a stress container for ffmpeg in order to 
 
-To do so, we are going to create two other containers from ffmpeg with two different compilation optimizations. Then, we are going to launch many ffmpeg command lines on that containers in order to increase the load.
+(1) gather data from cAdvisor 
 
-Go through O0 and O1 repositories and type the following commands in order to create docker images:
+(2) save them in InfluxDB 
+
+(3) show statistical analyzes through Grafana.
+
+To do so, we are going to create two other containers from ffmpeg with two different compilation optimizations. Then, we are going to execute a huge number of ffmpeg command lines on that containers in order to increase the load.
+
+Go through O0 and O1 repositories and type the following commands in order to create docker images from docker files:
 
     In O1:
-    docker build -t o0version .
+    docker build -t versiono0 .
     In O2:
-    docker build -t o1version .
+    docker build -t versiono1 .
 
 Now we have to start the two containers from both images.
 
-    docker run -i -t o0version
-    docker run -i -t o1version
+Before running the following commands, copy the content of tmp folder into your root tmp folder. This folder contains the media files and the script to run.
+
+	docker run -i --name=containero0 -v /tmp:/tmp -t versiono0 /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+	docker run -i --name=containero1 -v /tmp:/tmp -t versiono1 /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+NB: You can create more than two images using other docker files within O2, 03, Ofast repositories.
 
 ###Monitoring and test :
-Finally, one we start all containers, we can monitor and test some performance metrics.
+
+Finally, one we can start all containers, we can monitor and test some performance metrics.
 First, we have to be sure that cAdvisor is dumping data to the DB. Go to :
 
     http://10.0.2.15:8083
