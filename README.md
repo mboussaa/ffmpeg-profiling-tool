@@ -119,14 +119,21 @@ NB: You can create more than two images using other docker files within O2, 03, 
 
 ###Monitoring and test :
 
-Finally, one we can start all containers, we can monitor and test some performance metrics.
-First, we have to be sure that cAdvisor is dumping data to the DB. Go to :
+Finally, once containers are running, we can monitor and measure some non-functional metrics.
+First, we have to be sure that cAdvisor is dumping data to the influx data base. Go to :
 
     http://10.0.2.15:8083
-And type a test query to explore data. For example: 
 
-    select cpu_cumulative_usage from stats where docker_name="foo" and time>now()-15m
-    
+and execute a sample query to explore data. For example: 
+
+    select container_name, derivate(cpu_cumulative_usage) from stats where docker_name="containero0" and time>now()-15m group by time(2s)
+
+In fact, this query expresses CPU% utilized per container "containero0" for the last 15 minutes. Results are grouped by time(2s)
+
+You can find more details about measuring CPU usage in cadvisor github:[issue #679]
+[issue 679]:https://github.com/google/cadvisor/issues/679 
+
+
 Some stats and data must be displayed on the screen.
 
 To test Grafana and set some metrics go to :
