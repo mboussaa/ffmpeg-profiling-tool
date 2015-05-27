@@ -143,9 +143,9 @@ First, we have to be sure that cAdvisor is dumping data to the influx data base.
 
 and execute a sample query to explore data. For example:
 
-	select container_name, derivate(cpu_cumulative_usage) 
-	from stats 
-	where docker_name="containero0" and time>now()-15m 
+	select container_name, derivative(cpu_cumulative_usage)  
+	from stats  
+	where container_name='containero0' and time>now()-15m  
 	group by time(2s)
 
 In fact, this query expresses the CPU utilized per container "containero0" within last 15 minutes. Results are grouped by time(2s).
@@ -154,9 +154,9 @@ CPU usage is a cumulative metric so it is an ever-increasing integer. The mean o
 
 cAdvisor also outputs in number of cores. The result will be in billionths of a core so if we divide by 1,000,000,000, we get the result in whole cores. To get the percentage of CPU Usage, we will divide over the number of cores on the machine (your machine). For example:
 
-	select container_name, ((derivate(cpu_cumulative_usage)/1000000000)/4) 
+	select container_name, (derivative(cpu_cumulative_usage)/1000000000)/4
 	from stats 
-	where docker_name="containero0" and time>now()-15m 
+	where container_name='containero0' and time>now()-15m 
 	group by time(2s)
 
 This will be the percentage used over that 2s interval.
@@ -168,7 +168,7 @@ However, the memory consumption is an instantaneous metric. It's value will be u
 
 	select container_name, mean(memory_usage) 
 	from stats 
-	where container_name="containero0" and time>now()-15m 
+	where container_name='containero0' and time>now()-15m 
 	group by time(2s)
 
 Some stats and data must be displayed on the screen.
