@@ -1,4 +1,4 @@
-FROM      java:8
+FROM      maven:3
 
 MAINTAINER Mohamed Boussaa <mohamed.boussaa@inria.fr>
 

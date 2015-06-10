@@ -93,7 +93,7 @@ Execute "docker ps" to see running containers.
 ###Generate test data using Novelty Search :
 To generate test data using Novelty Search within a docker container: create a new image from a dockerfile. To do so, go to novelty_generator folder and execute :
 
-	docker build -t novelty_generator
+	docker build -t novelty_generator .
 
 Within this image, we will clone the maven project of novelty generator and execute it.
 
@@ -118,9 +118,9 @@ To do so, we are going to create two other containers (you can create more) from
 
 Go through O0 and O1 repositories and type the following commands in order to create docker images from docker files:
 
-    In O1:
+    In O0:
     docker build -t version_o0 .
-    In O2:
+    In O1:
     docker build -t version_o1 .
 
 Now we have to start the two containers from both images (versiono0 et versiono1).
@@ -195,11 +195,49 @@ Start a new graph and edit it. Navigate to the metric tab and try to set the sam
 
 You can play with it now !! Try to compare the cpu cumulative usage between the two versions of ffmpeg...
 
+####From Shipyard :
+Shipyard is a management tool for Docker servers. It allows you to see which containers each of your servers are running, in order to start or stop existing containers or create new ones.
+
+Shipyard is useful to deploy many applications/containers on your Docker host using the GUI.
+
+Once you've set up Shipyard on your server you can access it using a graphic interface, a command-line interface, or an API. 
+
+Once you have Docker running, it is quite easy to install Shipyard because it ships as Docker images. All you need to do is pull the images from the Docker registry and run the necessary containers. First we will create a data volume container to hold Shipyard's database data. This container won't do anything by itself; it is a convenient label for the location of all of Shipyard's data.
    
+	docker create --name shipyard-rethinkdb-data shipyard/rethinkdb
 
 
+Now that the data volume container is created, we can launch the database server for Shipyard and link them together.
 
+	docker run -it -d --name shipyard-rethinkdb --restart=always --volumes-from shipyard-rethinkdb-data -p 127.0.0.1:49153:8080 -p 127.0.0.1:49154:28015 -p 127.0.0.1:29015:29015 shipyard/rethinkdb
 
+This launches a container running RethinkDB, a distributed database, and makes sure it can only be accessed locally on the server itself. If you try to visit http://10.0.2.15:49153 in your browser, you shouldn't see anything.
+
+Now that Shipyard's database is up, we can run Shipyard itself by launching another container and linking it to the database.
+
+	docker run -it -p 8080:8080 -d --restart=always --name shipyard --link shipyard-rethinkdb:rethinkdb shipyard/shipyard
+
+We can now access our running Shipyard instance using port 8080.
+
+Next, we'll take a look at Shipyard's graphic interface. To access it, open http://10.0.2.15:8080 in your browser. This should show you the login screen. Use the username admin and the new password shipyard.
+
+Once you're logged in, Shipyard will display the Engines tab and warn you that there are no engines in your Shipyard cluster yet. An engine is a Docker host capable of running containers. Here we will add each Docker server that you want to manage with Shipyard.
+
+Add at the end of /etc/default/docker the following command to configure Docker to listen to requests port (4243 for example).
+
+	DOCKER_OPTS="-H tcp://your_server_ip:4243 -H unix:///var/run/docker.sock"
+
+and restart docker: 
+
+	sudo service docker restart
+
+Now that your Docker host is properly configured, we can add it to Shipyard as an engine. Access your Shipyard GUI and go to the Engines tab. Click on the + Add button.
+
+Add a Name for your docker host, a label, a CPU and memory limit and the following address :
+	
+	http://10.0.2.15:4243
+
+Shipyard will now connect to your Docker host, verify the connection, and add it as an engine.
 
 
 
