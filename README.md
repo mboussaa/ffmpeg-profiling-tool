@@ -102,7 +102,11 @@ Within this image, we will clone the maven project of novelty generator and exec
 
 Now, we have to create a new container from this image. We will copy media files and generated script from the maven project to the host machine (/tmp). Therefore, the stress containers can use these files to stress ffmpeg library (data will be always shared using -v Mount Volume)
 
-	docker run -i -v /tmp:/tmp  --name=container_novelty -t novelty_generator /bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
+	docker run -i 
+	-v /tmp:/tmp  
+	--name=container_novelty 
+	-t novelty_generator 
+	/bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
 
 So now, our /tmp host folder is containing all our media files and test data produced by our novelty generator.
 
@@ -209,28 +213,41 @@ Once you've set up Shipyard on your server you can access it using a graphic int
 
 Once you have Docker running, it is quite easy to install Shipyard because it ships as Docker images. All you need to do is pull the images from the Docker registry and run the necessary containers. First we will create a data volume container to hold Shipyard's database data. This container won't do anything by itself; it is a convenient label for the location of all of Shipyard's data.
    
-	docker create --name shipyard-rethinkdb-data shipyard/rethinkdb
+	docker create 
+	--name shipyard-rethinkdb-data 
+	shipyard/rethinkdb
 
 
 Now that the data volume container is created, we can launch the database server for Shipyard and link them together.
 
-	docker run -it -d --name shipyard-rethinkdb --restart=always --volumes-from shipyard-rethinkdb-data -p 127.0.0.1:49153:8080 -p 127.0.0.1:49154:28015 -p 127.0.0.1:29015:29015 shipyard/rethinkdb
+	docker run -it -d 
+	--name shipyard-rethinkdb 
+	--restart=always 
+	--volumes-from shipyard-rethinkdb-data 
+	-p 127.0.0.1:49153:8080 
+	-p 127.0.0.1:49154:28015 
+	-p 127.0.0.1:29015:29015 
+	shipyard/rethinkdb
 
 This launches a container running RethinkDB, a distributed database, and makes sure it can only be accessed locally on the server itself. If you try to visit http://10.0.2.15:49153 in your browser, you shouldn't see anything.
 
 Now that Shipyard's database is up, we can run Shipyard itself by launching another container and linking it to the database.
 
-	docker run -it -p 8080:8080 -d --restart=always --name shipyard --link shipyard-rethinkdb:rethinkdb shipyard/shipyard
+	docker run -it 
+	-p 8080:8080 -d 
+	--restart=always 
+	--name shipyard 
+	--link shipyard-rethinkdb:rethinkdb shipyard/shipyard
 
-We can now access our running Shipyard instance using port 8080.
+We can now access our running Shipyard instance using port 8080. You can use port 8085 (-p 8085:8080) to connect to shipyard instead of 8080 since the port 8080 is already used by cadvisor.
 
-Next, we'll take a look at Shipyard's graphic interface. To access it, open http://10.0.2.15:8080 (you can use of -p 8085:8080 to connect to shipyard instead of 8080 since the port 8080 is already used by cadvisor) in your browser. This should show you the login screen. Use the username admin and the new password shipyard.
+Next, we'll take a look at Shipyard's graphic interface. To access it, open http://10.0.2.15:8080 in your browser. This should show you the login screen. Use the username admin and the new password shipyard.
 
 Once you're logged in, Shipyard will display the Engines tab and warn you that there are no engines in your Shipyard cluster yet. An engine is a Docker host capable of running containers. Here we will add each Docker server that you want to manage with Shipyard.
 
 Add at the end of /etc/default/docker the following command to configure Docker to listen to requests port (4243 for example).
 
-	DOCKER_OPTS="-H tcp://your_server_ip:4243 -H unix:///var/run/docker.sock"
+	DOCKER_OPTS="-H tcp://10.0.2.15:4243 -H unix:///var/run/docker.sock"
 
 and restart docker: 
 
