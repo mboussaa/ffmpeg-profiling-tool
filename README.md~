@@ -25,7 +25,8 @@ Start InfluxDB inside a new container.
     -d
     --name=influxdb 
     -p 8083:8083  
-    -p 8086:8086  
+    -p 8086:8086
+    --restart=always    
     --expose 8090  
     --expose 8099  
     tutum/influxdb
@@ -48,7 +49,8 @@ Now start cAdvisor with the extra parameters storage_driver, storage_driver_host
     --volume=/var/lib/docker/:/var/lib/docker:ro     
     --publish=8080:8080     
     --detach=true     
-    --name=cadvisor     
+    --name=cadvisor  
+    --restart=always   
     google/cadvisor:latest  
     --logtostderr   
     -storage_driver=influxdb    
@@ -67,6 +69,7 @@ Start another container running Grafana.
     docker run
     -d
     -p 80:80 
+    --restart=always
     --name=grafana  
     -e HTTP_USER=root   
     -e HTTP_PASS=root    
@@ -128,7 +131,8 @@ Now we have to start the two containers from both images (versiono0 et versiono1
 Before running the following commands, copy the content of tmp folder into your root tmp folder. This folder contains the media files and the script to run.
 
 	docker run -i 
-	--name=container_o0 
+	--name=container_o0
+        --restart=always 
 	-v /tmp:/tmp 
 	-t version_o0 
 	/bin/bash 
@@ -136,6 +140,7 @@ Before running the following commands, copy the content of tmp folder into your 
 
 	docker run -i 
 	--name=container_o1 
+	--restart=always
 	-v /tmp:/tmp 
 	-t version_o1 
 	/bin/bash 
@@ -219,7 +224,7 @@ Now that Shipyard's database is up, we can run Shipyard itself by launching anot
 
 We can now access our running Shipyard instance using port 8080.
 
-Next, we'll take a look at Shipyard's graphic interface. To access it, open http://10.0.2.15:8080 in your browser. This should show you the login screen. Use the username admin and the new password shipyard.
+Next, we'll take a look at Shipyard's graphic interface. To access it, open http://10.0.2.15:8080 (you can use of -p 8085:8080 to connect to shipyard instead of 8080 since the port 8080 is already used by cadvisor) in your browser. This should show you the login screen. Use the username admin and the new password shipyard.
 
 Once you're logged in, Shipyard will display the Engines tab and warn you that there are no engines in your Shipyard cluster yet. An engine is a Docker host capable of running containers. Here we will add each Docker server that you want to manage with Shipyard.
 
@@ -230,6 +235,8 @@ Add at the end of /etc/default/docker the following command to configure Docker 
 and restart docker: 
 
 	sudo service docker restart
+
+All docker instances will be restarted automatically since we run all containers with command option --restart=always. Therefore, each time we restart docker services, containers are restarted.
 
 Now that your Docker host is properly configured, we can add it to Shipyard as an engine. Access your Shipyard GUI and go to the Engines tab. Click on the + Add button.
 
