@@ -51,10 +51,87 @@ noveltyGenerator:
     - "/tmp:/tmp"
   command: /bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
 
-#Stress container: ffmpeg compiled with level O0 
-versionO0:
-  image: "O0"
-  name: "versionO0"
+#Stress container: ffmpeg compiled with level oO 
+versionoo:
+  build: o0
+  cpuset: 0
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versionoo"
   volumes:
     - "/tmp:/tmp"
   command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level o1 
+versiono1:
+  build: o1
+  cpuset: 1
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versiono1"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level o2
+versiono2:
+  build: o2
+  cpuset: 2
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versiono2"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level o3 
+versiono3:
+  build: o3
+  cpuset: 3
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versiono3"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level ofast 
+versionofast:
+  build: ofast
+  cpuset: 0,1
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versionofast"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level os 
+versionos:
+  build: os
+  cpuset: 0,1
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versionos"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+
+#Stress container: ffmpeg compiled with level og 
+versionog:
+  build: og
+  cpuset: 0,1
+  cpu_shares: 0
+  mem_limit: 500M
+  #memswap_limit: 10000
+  name: "versionog"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+

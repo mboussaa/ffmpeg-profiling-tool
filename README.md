@@ -264,9 +264,9 @@ Add a Name for your docker host, a label, a CPU and memory limit and the followi
 Shipyard will now connect to your Docker host, verify the connection, and add it as an engine.
 
 List of running containers looks like : 
-![alt tag](https://github.com/mboussaa/ffmpeg-profiling-tool/blob/master/Images/showContainers.png)
+![alt tag](https://github.com/mboussaa/ffmpeg-profiling-tool/blob/master/Figures/showContainers.png)
 Deploy a new docker instance through the Web UI: 
-![alt tag](https://github.com/mboussaa/ffmpeg-profiling-tool/blob/master/Images/deployContainers.png)
+![alt tag](https://github.com/mboussaa/ffmpeg-profiling-tool/blob/master/Figures/deployContainers.png)
 
 
 

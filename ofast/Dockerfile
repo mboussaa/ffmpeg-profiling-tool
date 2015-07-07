@@ -10,6 +10,7 @@ WORKDIR /root/ffmpeg_sources/yasm-1.3.0
 RUN sed -i 's/-O1/-Ofast/g' configure
 RUN sed -i 's/-O0/-Ofast/g' configure
 RUN sed -i 's/-O2/-Ofast/g' configure
+RUN sed -i 's/-O3/-Ofast/g' configure
 RUN ./configure   --prefix="/root/ffmpeg_build" --bindir="/root/bin"
 RUN make
 RUN make install
