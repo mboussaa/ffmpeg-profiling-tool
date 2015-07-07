@@ -1,44 +1,60 @@
-influxdb:
-  image: tutum/influxdb:0.8.8
-  name: influxdb
+#InfluxDB: Time series data base container
+InfluxSrv:
+  image: "tutum/influxdb:0.8.8"
+  name: "influxdb"
   ports:
-   - "8083:8083"
-   - "8086:8086"
-  environment:
-   - "PRE_CREATE_DB='cadvisorDB'"
+    - "8083:8083"
+    - "8086:8086"
   expose:
-   - "8090"
-   - "8099"
-
-grafana:
-  image: tutum/grafana
-  name: grafana
-  ports:
-   - "80:80"
+    - "8090"
+    - "8099"
   environment:
-   - "HTTP_USER=root"
-   - "HTTP_PASS=root"
-   - "INFLUXDB_HOST=10.0.0.22"
-   - "INFLUXDB_PORT=8086"
-   - "INFLUXDB_NAME=cadvisorDB"
-   - "INFLUXDB_USER=root"
-   - "INFLUXDB_PASS=root"
-   - "INFLUXDB_IS_GRAFANADB=true"
+    - PRE_CREATE_DB=cadvisor
 
+#cAdvisor: Google Monitoring container
 cadvisor:
-  image: google/cadvisor:latest
-  name: cadvisor
-  ports:
-   - "8080:8080"
+  image: "google/cadvisor:0.14.0"
+  name: "cadvisor"
   volumes:
-   - "/:/rootfs:ro"
-   - "/var/run:/var/run:rw"
-   - "/sys:/sys:ro"
-   - "/var/lib/docker/:/var/lib/docker:ro"
-  restart: always
-  run:
-    detach:true 
-  command: 
-  -storage_driver=influxdb 
-  -storage_driver_db=cadvisorDB 
-  -storage_driver_host=10.0.0.22:8086
+    - "/:/rootfs:ro"
+    - "/var/run:/var/run:rw"
+    - "/sys:/sys:ro"
+    - "/var/lib/docker/:/var/lib/docker:ro"
+  links:
+    - "InfluxSrv:influxsrv"
+  ports:
+    - "8080:8080"
+  command: "-storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxsrv:8086"
+
+#Grafana: Real-time dashboard desinging container
+grafana:
+  image: "tutum/grafana"
+  name: "grafana"
+  ports:
+    - "80:80"
+  environment:
+    - INFLUXDB_HOST=10.0.0.22
+    - INFLUXDB_PORT=8086
+    - INFLUXDB_NAME=cadvisor
+    - INFLUXDB_USER=root
+    - INFLUXDB_PASS=root
+    - HTTP_USER=root
+    - HTTP_PASS=root
+  links:
+    - "InfluxSrv:influxsrv"
+
+#Novelty search test fata generation container
+noveltyGenerator:
+  image: "novelty_generator"
+  name: "noveltyGenerator"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
+
+#Stress container: ffmpeg compiled with level O0 
+versionO0:
+  image: "O0"
+  name: "versionO0"
+  volumes:
+    - "/tmp:/tmp"
+  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
