@@ -13,7 +13,7 @@ InfluxSrv:
 
 #cAdvisor: Google Monitoring container
 cadvisor:
-  image: "google/cadvisor:0.14.0"
+  image: "google/cadvisor:latest"
   name: "cadvisor"
   volumes:
     - "/:/rootfs:ro"
@@ -28,20 +28,43 @@ cadvisor:
 
 #Grafana: Real-time dashboard desinging container
 grafana:
-  image: "tutum/grafana"
+  image: "grafana/grafana:2.0.2"
   name: "grafana"
   ports:
-    - "80:80"
-  environment:
-    - INFLUXDB_HOST=10.0.0.22
-    - INFLUXDB_PORT=8086
-    - INFLUXDB_NAME=cadvisor
-    - INFLUXDB_USER=root
-    - INFLUXDB_PASS=root
-    - HTTP_USER=root
-    - HTTP_PASS=root
+    - "80:3000"
+#  environment:
+#    - INFLUXDB_HOST=10.0.0.22
+#    - INFLUXDB_PORT=8086
+#    - INFLUXDB_NAME=cadvisor
+#    - INFLUXDB_USER=root
+#    - INFLUXDB_PASS=root
+#    - HTTP_USER=root
+#    - HTTP_PASS=root
   links:
     - "InfluxSrv:influxsrv"
+
+#Shipyard: Graphical dokcer manager
+shipyardrethinkdbdata:
+  image: "shipyard/rethinkdb"
+shipyardrethinkdb:
+  image: "shipyard/rethinkdb"
+  volumes_from:
+    - "shipyardrethinkdbdata"
+  ports:
+    - "127.0.0.1:49153:8080"
+    - "127.0.0.1:49154:28015"
+    - "127.0.0.1:29015:29015"
+#     - "8080"
+#     - "28015"
+#     - "29015"
+
+shipyard:
+  image: "shipyard/shipyard"
+  ports:
+    - "8085:8080"
+  links:
+    - "shipyardrethinkdb:rethinkdb"
+    - "shipyardrethinkdbdata"
 
 #Novelty search test fata generation container
 noveltyGenerator:
@@ -52,47 +75,47 @@ noveltyGenerator:
   command: /bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
 
 #Stress container: ffmpeg compiled with level oO 
-versionoo:
-  build: o0
-  cpuset: 0
-  cpu_shares: 0
-  mem_limit: 500M
+versiono0:
+  build: "o0"
+  cpuset: "0"
+  #cpu_shares: 512
+  mem_limit: "1000000000"
   #memswap_limit: 10000
-  name: "versionoo"
+  name: "versiono0"
   volumes:
     - "/tmp:/tmp"
   command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level o1 
-versiono1:
-  build: o1
-  cpuset: 1
-  cpu_shares: 0
-  mem_limit: 500M
+#versiono1:
+#  build: "o1"
+#  cpuset: "1"
+  #cpu_shares: 512
+#  mem_limit: "10000000"
   #memswap_limit: 10000
-  name: "versiono1"
-  volumes:
-    - "/tmp:/tmp"
-  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+#  name: "versiono1"
+#  volumes:
+#    - "/tmp:/tmp"
+#  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level o2
-versiono2:
-  build: o2
-  cpuset: 2
-  cpu_shares: 0
-  mem_limit: 500M
+#versiono2:
+#  build: "o2"
+#  cpuset: "2"
+#  #cpu_shares: 512
+#  mem_limit: "10000000"
   #memswap_limit: 10000
-  name: "versiono2"
-  volumes:
-    - "/tmp:/tmp"
-  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+#  name: "versiono2"
+#  volumes:
+#    - "/tmp:/tmp"
+#  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level o3 
 versiono3:
-  build: o3
-  cpuset: 3
-  cpu_shares: 0
-  mem_limit: 500M
+  build: "o3"
+  cpuset: "3"
+  #cpu_shares: 512
+  mem_limit: "1000000000"
   #memswap_limit: 10000
   name: "versiono3"
   volumes:
@@ -100,38 +123,39 @@ versiono3:
   command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level ofast 
-versionofast:
-  build: ofast
-  cpuset: 0,1
-  cpu_shares: 0
-  mem_limit: 500M
+#versionofast:
+#  build: "ofast"
+#  cpuset: 0,1
+  #cpu_shares: 512
+#  mem_limit: "10000000"
   #memswap_limit: 10000
-  name: "versionofast"
-  volumes:
-    - "/tmp:/tmp"
-  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+#  name: "versionofast"
+#  volumes:
+#    - "/tmp:/tmp"
+#  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level os 
-versionos:
-  build: os
-  cpuset: 0,1
-  cpu_shares: 0
-  mem_limit: 500M
-  #memswap_limit: 10000
-  name: "versionos"
-  volumes:
-    - "/tmp:/tmp"
-  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+#versionos:
+#  build: "os"
+#  cpuset: 0,1
+#  #cpu_shares: 512
+#  mem_limit: 10000000
+#  #memswap_limit: 10000
+#  name: "versionos"
+#  volumes:
+#    - "/tmp:/tmp"
+#  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
 #Stress container: ffmpeg compiled with level og 
-versionog:
-  build: og
-  cpuset: 0,1
-  cpu_shares: 0
-  mem_limit: 500M
-  #memswap_limit: 10000
-  name: "versionog"
-  volumes:
-    - "/tmp:/tmp"
-  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
+#versionog:
+#  build: "og"
+#  cpuset: 0,1
+  #cpu_shares: 512
+#  mem_limit: 10000000
+#  #memswap_limit: 10000
+#  name: "versionog"
+#  volumes:
+#    - "/tmp:/tmp"
+#  command: /bin/bash -c "chmod +x /tmp/ffmpegScript.sh && /tmp/ffmpegScript.sh"
 
+-- INSERT --                                            160,1         Bot
