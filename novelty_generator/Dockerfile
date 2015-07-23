@@ -17,12 +17,12 @@ RUN apt-get install -y git
 #  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 #ENV MAVEN_HOME /usr/share/maven
 
-RUN git clone https://github.com/mboussaa/script-generator-for-ffmpeg.git
+#RUN git clone https://github.com/mboussaa/script-generator-for-ffmpeg.git
 
 #COPY /home/mboussaa/script-generator-for-ffmpeg /root/
-WORKDIR /script-generator-for-ffmpeg
-RUN mvn clean
-RUN mvn install
+#WORKDIR /script-generator-for-ffmpeg
+#RUN mvn clean
+#RUN mvn install
 #RUN cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/
 #WORKDIR /script-generator-for-ffmpeg/target/ffmpeg
 #RUN ls -l
