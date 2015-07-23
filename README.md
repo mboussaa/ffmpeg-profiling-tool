@@ -108,6 +108,11 @@ Now, we have to create a new container from this image. We will copy media files
 	-t novelty_generator 
 	/bin/bash -c "cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
 
+
+or 
+
+    docker run -i  -v /tmp:/tmp   --name=container_novelty  -t novelty_generator  /bin/bash -c "git clone https://github.com/mboussaa/script-generator-for-ffmpeg.git && cd /script-generator-for-ffmpeg && mvn clean install && cp -r /script-generator-for-ffmpeg/ffmpeg/* /tmp/"
+
 So now, our /tmp host folder is containing all our media files and test data produced by our novelty generator.
 
 
