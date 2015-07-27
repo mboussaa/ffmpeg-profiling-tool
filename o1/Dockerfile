@@ -2,6 +2,7 @@ FROM barais/ffmpeg
 	
 	MAINTAINER Olivier Barais: 0.1
 	
+	RUN sudo apt-get install time
 	WORKDIR /root/ffmpeg_sources
 	ENV CFLAGS="-O1 -Wall"
 	ENV CXXFLAGS="-O1 -Wall"
